@@ -34,7 +34,7 @@
 		<script src="js/Detector.js"></script>
 		<script src="js/OrbitControls.js"></script>
 		<script src="js/libs/stats.min.js"></script>
-		
+		<script src='js/libs/dat.gui.min.js'></script>
 
 		<script>
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -57,13 +57,24 @@
 
 				controls = new THREE.OrbitControls( camera, renderer.domElement );
 
+				var gui = new dat.GUI();
+				var parameters = {
+						wireframe: false
+				};
+				gui.add(parameters, 'wireframe').name("Wireframe Mode");
+				
 				var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
-				var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-				cube = new THREE.Mesh( geometry, material );
+				var phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
+				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+				var ambientLight = new THREE.AmbientLight( 0x333333 );
+				cube = new THREE.Mesh( geometry, phongMaterial );
 				scene.add( cube );
 				scene.add(camera);
+				scene.add(light);
+				scene.add(ambientLight);
 
 				window.addEventListener( 'resize', onWindowResize, false );
+
 			}
 
 
