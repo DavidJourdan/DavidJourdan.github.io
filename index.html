@@ -60,10 +60,12 @@
 
 				var gui = new dat.GUI();
 				parameters = {
-						wireframe: false
+						wireframe: false,
+						rotation: true
 				};
 				wireframe = false;
 				gui.add(parameters, 'wireframe').name("Wireframe Mode");
+				gui.add(parameters, 'rotation').name("Rotation");
 				
 				geometry = new THREE.BoxBufferGeometry(1, 1, 1);
 				phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
@@ -92,8 +94,10 @@
 
 
 				requestAnimationFrame( render );
-				cube.rotation.x += 0.01;
-				cube.rotation.y += 0.01;
+				if(parameters.rotation){
+					cube.rotation.x += 0.01;
+					cube.rotation.y += 0.01;
+				}
 				renderer.render( scene, camera );
 			}
 
