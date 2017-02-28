@@ -40,6 +40,7 @@
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var camera, scene, cube, renderer;
+			var geometry, phongMaterial, wireMaterial, parameters, wireframe;
 
 			init();
 			render();
@@ -58,13 +59,15 @@
 				controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 				var gui = new dat.GUI();
-				var parameters = {
+				parameters = {
 						wireframe: false
 				};
+				wireframe = false;
 				gui.add(parameters, 'wireframe').name("Wireframe Mode");
 				
-				var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
-				var phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
+				geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+				phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
+				wireMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
 				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
 				var ambientLight = new THREE.AmbientLight( 0x333333 );
 				cube = new THREE.Mesh( geometry, phongMaterial );
@@ -79,6 +82,15 @@
 
 
 			function render() {
+				if(wireframe !== parameters.wireframe) {
+					var material = parameters.wireframe ? wireMaterial : phongMaterial;
+					scene.remove(cube);
+					cube = new THREE.Mesh( geometry, material );
+					wireframe = !wireframe;
+					scene.add(cube);
+				}
+
+
 				requestAnimationFrame( render );
 				cube.rotation.x += 0.01;
 				cube.rotation.y += 0.01;
