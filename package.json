@@ -1,0 +1,14 @@
+{
+  "name": "davidjourdan.github.io",
+  "version": "1.0.0",
+  "description": "My personal GitHub Page",
+  "scripts": {
+    "test": "mocha --reporter list"
+  },
+  "author": "David Jourdan",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "three": "^0.84.0"
+  }
+}
