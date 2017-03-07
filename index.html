@@ -74,7 +74,7 @@
 
 			var camera, scene, cube, renderer;
 			var geometry, parameters, wireframe;
-			var phongMaterial, wireMaterial, toonMaterial;
+			var phongMaterial, wireMaterial, toonMaterial, toonShader;
 
 			init();
 			render();
@@ -94,12 +94,30 @@
 
 				var gui = new dat.GUI();
 				parameters = {
-						wireframe: false,
-						rotation: true
+						rotation: true,
+						shader: "Phong"
 				};
 				wireframe = false;
-				gui.add(parameters, 'wireframe').name("Wireframe Mode");
 				gui.add(parameters, 'rotation').name("Rotation");
+				gui.add(parameters, 'shader', ['Phong', 'Wireframe', 'Toon', 'Custom']).name("Shader").onFinishChange(function() {
+					scene.remove(cube);
+					switch(parameters.shader) {
+						case 'Phong':
+							material = phongMaterial;
+							break;
+						case 'Wireframe':
+							material = wireMaterial;
+							break;
+						case 'Toon':
+							material = toonMaterial;
+							break;
+						case 'Custom':
+							material = toonShader;
+							break;
+					}
+					cube = new THREE.Mesh( geometry, material );
+					scene.add(cube);
+				});
 
 				var uniforms = { color: { value: new THREE.Color( 0x0077ff ) },
 								 lightPos: { value: new THREE.Vector3(10, 10, 10) }, 
@@ -109,16 +127,18 @@
 				var fragmentShader = document.getElementById('toonFragmentShader').textContent;
 				
 				geometry = new THREE.SphereBufferGeometry(1, 64, 64);
-				phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
-				wireMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
-				toonMaterial = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.DoubleSide } );
+				phongMaterial = new THREE.MeshPhongMaterial( { color: 0x0077ff, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
+				wireMaterial = new THREE.MeshBasicMaterial( { color: 0x0077ff, wireframe: true } );
+				toonShader = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms } );
+				toonMaterial = new THREE.MeshToonMaterial( { color: 0x0077ff, shading: THREE.SmoothShading } );
+
 				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
 				var ambientLight = new THREE.AmbientLight( 0x333333 );
-				cube = new THREE.Mesh( geometry, toonMaterial );
+				cube = new THREE.Mesh( geometry, phongMaterial );
 				scene.add( cube );
 				scene.add(camera);
-				// scene.add(light);
-				// scene.add(ambientLight);
+				scene.add(light);
+				scene.add(ambientLight);
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
@@ -126,13 +146,6 @@
 
 
 			function render() {
-				if(wireframe !== parameters.wireframe) {
-					var material = parameters.wireframe ? wireMaterial : phongMaterial;
-					scene.remove(cube);
-					cube = new THREE.Mesh( geometry, material );
-					wireframe = !wireframe;
-					scene.add(cube);
-				}
 				controls.update();
 
 				requestAnimationFrame( render );
