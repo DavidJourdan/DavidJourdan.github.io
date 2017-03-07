@@ -30,23 +30,57 @@
 			Built using <a href="http://threejs.org"> three.js </a> 
 		</div>
 
-		<script src="js/three.js"></script>
-		<script src="js/Detector.js"></script>
-		<script src="js/OrbitControls.js"></script>
-		<script src="js/libs/stats.min.js"></script>
-		<script src='js/libs/dat.gui.min.js'></script>
+		<script src="lib/three.js"></script>
+		<script src="lib/Detector.js"></script>
+		<script src="lib/OrbitControls.js"></script>
+		<script src="lib/stats.min.js"></script>
+		<script src='lib/dat.gui.min.js'></script>
+		<script id='vertexShader' type='x-shader/x-vertex'>
+			varying vec3 n;
+			varying vec3 p;
+			void main(void) {
+				n = normal;
+				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+				p = worldPosition.xyz;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );	
+			}
+		</script>
+		<script id='toonFragmentShader' type='x-shader/x-fragment'>
+			#define INV_PI 0.31830988618379067153776752674503
+
+			varying vec3 n; // fragment-wise normal
+			varying vec3 p; // fragment-wise position
+
+			uniform vec3 color;
+			uniform vec3 lightPos;
+			uniform vec3 cameraPos;
+
+			const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
+			const vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
+
+			void main (void) {
+				gl_FragColor = vec4(color, 1.0);
+
+				vec3 l = normalize (lightPos - p);
+				vec3 v = normalize (cameraPos - p);
+
+				if(dot(n, l) > 0.0) gl_FragColor = vec4(0.5*color, 1.0);
+				else if(dot(n, -v) > 0.99) gl_FragColor = white;
+			}
+		</script>
 
 		<script>
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var camera, scene, cube, renderer;
-			var geometry, phongMaterial, wireMaterial, parameters, wireframe;
+			var geometry, parameters, wireframe;
+			var phongMaterial, wireMaterial, toonMaterial;
 
 			init();
 			render();
 
 			function init() {
-				scene = new THREE.Scene();
+				scene = new THREE.Scene();	
 
 				renderer = new THREE.WebGLRenderer({ antialias: true });
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -66,17 +100,25 @@
 				wireframe = false;
 				gui.add(parameters, 'wireframe').name("Wireframe Mode");
 				gui.add(parameters, 'rotation').name("Rotation");
+
+				var uniforms = { color: { value: new THREE.Color( 0x0077ff ) },
+								 lightPos: { value: new THREE.Vector3(10, 10, 10) }, 
+								 cameraPos: { value: new THREE.Vector3(0, 0, 5) } };
+
+				var vertexShader = document.getElementById('vertexShader').textContent;
+				var fragmentShader = document.getElementById('toonFragmentShader').textContent;
 				
-				geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+				geometry = new THREE.SphereBufferGeometry(1, 64, 64);
 				phongMaterial = new THREE.MeshPhongMaterial( { color: 0x00ff00, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
 				wireMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+				toonMaterial = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.DoubleSide } );
 				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
 				var ambientLight = new THREE.AmbientLight( 0x333333 );
-				cube = new THREE.Mesh( geometry, phongMaterial );
+				cube = new THREE.Mesh( geometry, toonMaterial );
 				scene.add( cube );
 				scene.add(camera);
-				scene.add(light);
-				scene.add(ambientLight);
+				// scene.add(light);
+				// scene.add(ambientLight);
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
@@ -91,7 +133,7 @@
 					wireframe = !wireframe;
 					scene.add(cube);
 				}
-
+				controls.update();
 
 				requestAnimationFrame( render );
 				if(parameters.rotation){
