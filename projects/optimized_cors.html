@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>David Jourdan -- Optimized Centers of Rotation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../lib/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../css/main.css" rel="stylesheet">
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+  </head>
+
+  <body id="page-top">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+      <a class="navbar-brand" href="../index.html">
+        <span class="d-none d-lg-block">
+          <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="../resources/Photo.JPG" alt="">
+        </span>
+      </a>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.html" id="active">Projects</a>
+          </li>
+          <ul class="list-inline list-social-icons mb-0">
+            <li class="list-inline-item">
+              <a href="https://github.com/DavidJourdan">
+                <span class="fa-stack fa-lg">
+                  <i class="fa fa-circle fa-2x"></i>
+                  <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a href="https://www.linkedin.com/in/david-jourdan-telecom/">
+                <span class="fa-stack fa-lg">
+                  <i class="fa fa-circle fa-2x"></i>
+                  <i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a href="../resources/cv.pdf">
+                <span class="fa-stack fa-lg">
+                  <i class="fa fa-circle fa-2x"></i>
+                  <i class="fas fa-address-book fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+          </ul>
+        </ul>
+      </div>
+    </nav>
+
+
+
+    <div class="container-fluid p-0">
+
+      <section class="resume-section p-3 p-lg-5 d-flex d-column">
+        <div class="my-auto">
+          <h2 class="mb-5">Skeletal Skinning with Optimized Centers of Rotation</h2>
+          <div class="resume-item d-flex flex-column flex-md-row mb-5">
+          <div class="resume-content mr-auto">
+              <p>Skeletal skinning is a technique that is massively used in computer graphics to animate meshes in real-time, even if it doesn't provide the most realistic results its speed makes it widely used in applications where performance is critical such as in video games
+              The basic idea is to embed a skeleton in the mesh so that the displacement of each vertex will be a function of the orientations and positions of the bones. Weights are used to control the influence of each skeleton, and artists can tune them to get a more visually pleasing result. I'll first describe 2 classic methods based on this principle and then we'll take a look at a more recent work on the subject (we have implemented all the methods described in an application that makes it easier to compare them)</p>
+
+              <h3>Linear Blend Skinning</h3>
+
+              <p>This is the first algorithm that uses this technique, it was proposed in 1988 by <a href="http://graphicsinterface.org/wp-content/uploads/gi1988-4.pdf">Magnenat-Thalmann et al.</a> It is still massively used today because it is efficient enough for many applications and it is quite simple: we just compute the weighted average of the transformations associated to each bone
+                \( \mathbf{LBS}(v) = \sum_{j} w_j (\mathbf{R}_j v + t_j) \). The problem with this approach is that an average of a rigid transformation is not itself a transformation, mathematically speaking the space of 3D rotations is not linear, it has a more complex structure which is called a Lie group. </p>
+
+                <figure class="figure">
+                  <img src="../resources/candy_wrapper.jpg"></img>
+                  <figcaption class="figure-caption text-center">The so-called candy-wrapper artifact appears when bones are twisted, because \( \mathbf{R}_{\pi} + \mathbf{R}_{- \pi} = 0 \) </figcaption>
+                </figure>
+              <br><br>
+
+              <h3>Dual Quaternion Skinning</h3>
+
+              <p>To overcome this difficulty various methods have been proposed, in Dual Quaternion Skinning (DQS), <a href="https://www.cs.utah.edu/~ladislav/kavan08geometric/kavan08geometric.pdf">Kavan et al.</a> manage to compute a blend of rotations that is itself a rotation by converting them into quaternions beforehand and and blending them in this space. Quaternions have been extensively studied as a mathematical object and have a lot of interesting properties but in computer graphics it is often enough to know that a quaternion can be represented as a vector with 4 coordinates, one for the angle and the 3 others for the axis of rotation. Since we are allowed to do weighted sums with vectors, we now have a way to correctly blend our rotations (actually the most precise way to do that would be to do a Spherical linear interpolation, but it is close enough). This method is based on the same pipeline than LBS (each vertex has a list of weights corresponding to the bones) so we only need a few modifications to turn a program based on LBS to DQS.</p>
+
+
+              <p>
+                But even if DQS manages to correct LBS's artifacts, it is also responsible for the apparition of another one, namely the joint bulge artifact. It is caused by the fact that even if we assign a rotation to every vertex of the geometry, the point around which it rotates (the center of rotation) is not be chosen to be on the location of the closest joint, that is what <a href="https://www.disneyresearch.com/publication/skinning-with-optimized-cors/">Real-time Skeletal Skinning with Optimized Centers of Rotation</a> aims at resolving.
+              </p>
+
+
+              <figure class="figure">
+                <img src="../resources/joint-bulge.jpg" class="figure-img img-fluid rounded">
+                <figcaption class="figure-caption text-center">The joint bulge artifact (images from the <a href="http://libigl.github.io/libigl/tutorial/tutorial.html">libigl tutorial</a>, licensed under MPL2).</figcaption>
+              </figure>
+
+              <br><br>
+              <h3>Optimized Centers of Rotation</h3>
+
+              <p>
+                 The idea is to look for an optimized translation \( t_p \) which, with the rotation \( \mathbf{R_p} \) (already computed by quaternion linear interpolation as in DQS), will approximate  the transformation given by LBS (which "only" inconvenient is of not being a rigid transformation) as closely as possible, and will do so not only when applied to the given vertex \(p\) that we're considering but also to every vertex that has "similar" enough weights (with respect to a given similarity function \( s(\mathbf{w_p}, \mathbf{w_v}) \)).
+                $$ t_p = \arg \min_t \int_{v \in \Omega} s(\mathbf{w_p}, \mathbf{w_v}) || \mathbf{R_p} v + t - \mathbf{LBS}(v) ||^2_2 dv $$
+                After differentiating the equation above, we get \( t_p = \sum_{j} w_j (\mathbf{R}_j p^* + t_j) - \mathbf{R_p} p^* \).
+              </p>
+
+              <p>
+                This leaves us with only the centers of rotation \( p^* \) to precompute (the formula beside is discretized, but you get the idea), and the rest of the algorithm is just basic linear blend   and quaternion interpolation which runs in real-time.
+                $$ p^* = \frac{ \int_{v \in \Omega} s(\mathbf{w_p}, \mathbf{w_v}) v dv }{ \int_{v \in \Omega} s(\mathbf{w_p}, \mathbf{w_v}) dv } $$
+                The similarity between weights is defined as
+                \( s(\mathbf{w_p}, \mathbf{w_v}) = \sum_{j \neq k} \mathbf{w_p}_j \mathbf{w_p}_k \mathbf{w_v}_j \mathbf{w_v}_k \exp ( - \frac{(\mathbf{w_p}_j \mathbf{w_v}_k - \mathbf{w_p}_k \mathbf{w_v}_j )^2}{\sigma ^2} ) \)
+                which looks quite complicated and is not really justified in the paper (they had pratical reasons to use this but there is no mathematical justification). Worse than this, the similarity does not behave well on some cases, for example if a vertex \( p \) is only controlled by one bone \( j \) you will have \( \mathbf{w_p}_j = 1 \) and \( \mathbf{w_p}_k = 0 \), \( \forall k \neq j \), this means that for every vertex \( v \) (and even for \( p \) itself) \( s(\mathbf{w_p}, \mathbf{w_v}) = 0 \)
+              </p>
+
+              <p>
+                This prevents us to compute the centers of rotation in these cases, while the solution in these cases is trivial because it falls back to the LBS case (\( t_p = t_j \) and if you look at the formula you'll see that it's true for any well-defined \( p^* \)). We could argue that it's not a real problem because it rarely happens and we can test it easily and fall back to a  simpler solution if it's the case, but this is an issue about continuity: if the distribution of weights is close to this, we will get an incorrect value because of the error on floating-point numbers.
+              </p>
+              <br>
+              <h3>Improving the similarity function</h3>
+
+              <p>
+                 So we looked for candidates to replace this similarity, and actually we found quite a few. Since the weights are defined a vectors of positive numbers which sum to 1, they can be seen as probability distributions and a lot of distances between probabilities have been already defined and studied. Of course similarity and distance are not the same thing, if weights are similar their distance will be small. So we could define a similarity as
+                 \( s(\mathbf{w_p}, \mathbf{w_v}) = \exp(\frac{-d(\mathbf{w_p}, \mathbf{w_v})^2}{\sigma^2}) \) and Le et al. actually mentioned it in their paper (combined with the \(L_2\) or Minkowski distance ) but the problem with this approach they say is that similarity will decrease too fast and this will not behave well.
+              </p>
+              <p>
+                But we can chose something which doesn't decrease as fast, for example \( s(\mathbf{w_p}, \mathbf{w_v}) = \frac{1}{1 + d(\mathbf{w_p}, \mathbf{w_v})^k} \) </p>
+
+                <p>This defines a family of similarities to choose from, provided that you have the right distance. For example you can start to test this function with \( k = 2 \) and you  can increase it as much as you want if you  think this doesn't decrease as fast as you want. You can also easily multiply this function by a constant if you don't want it to have values between 0 and 1. I will now discuss 3 candidates that we have considered for the distance.
+              </p>
+              <h4>L2 distance</h4>
+              <p>
+                I already mentioned this one, which may be the most simple since it is defined as \( L_2(\mathbf{w_p}, \mathbf{w_v}) = ||\mathbf{w_p} - \mathbf{w_v}||_2 = \sqrt{\sum_i (\mathbf{w_p}_i - \mathbf{w_v}_i^2)} \), it has the convergence properties that we mentioned when a vector of weights tends to the Dirac \(\delta\) function and it even works for negative weights, which have no mathematical definition but are often used by artists.
+              </p>
+              <h4>Kullback-Leibler divergence</h4>
+              $$ KL(\mathbf{w_p}, \mathbf{w_v}) = \sum_i \mathbf{w_p}_i \log( \frac{\mathbf{w_p}_i}{\mathbf{w_v}_i} ) $$
+              <p>
+                It is a classic when it comes to comparing probabilities, it has been extensively studied and has a lot of interesting properties but it is not a distance mathematically speaking since it is not symmetric, and we can only compare positive and non-zero values, though this may not be regarded as a problem since it was already the case for the original similarity function.
+              </p>
+              <h4>Wasserstein distance</h4>
+              <p>
+                This last one is a bit fancier, this is a distance that has been studied a lot recently because it is directly linked to the optimal transportation problem which is still a hot topic in math and has a lot of potential applications in computer graphics. It basically says how much work you need if you wwant to move dirt from one distribution to another if you see them as piles of dirt, ie it's the total amount of dirt times the distance it needs to travel, that is why this distance is often called the earth mover's distance.
+                I thought about this one because the year before we studied an article by Solomon et al. called <a href="https://geometry.stanford.edu/papers/sdpcbndg-cwdeotogd-15/sdpcbndg-cwdeotogd-15.pdf">Convolutional Wasserstein Distances: Efficient Optimal Transportation on Geometric Domains</a>, a very interesting paper by the way, it beautifully simplifies an otherwise very difficult problem and proposes a few applications of this distance to interpolate various quantities defined on meshes.
+                But fortunately, since our problem is discrete and one dimensional, a simple algorithm can compute this distance very easily, you can see it <a href="https://en.wikipedia.org/wiki/Earth_mover%27s_distance#Computing_the_EMD">here</a>.
+              </p>
+              <p>
+                These 3 distances can be implemented quite easily and avoid the problems that I mentioned, and though I prefer the Earth mover's distance because of its simplicity you could use any of these because the way you compute the similarity is not the most important part of the method and there is no best way to compute it. What would be more interesting however would be to allow the artists to edit the computed centers of rotation, they could be used as new tools along the skinning weights to create more detailed and realistic real-time animation.
+              </p>
+              <p> If you want to see more, our implementation is <a href='https://github.com/DavidJourdan/Skinning-comparison'>here</a>, all the intructions to compile are in the readme but if you're on MacOS or Linux, you basically just need to hit qmake, so it's pretty straightforward.</p>
+
+            </div>
+        </div>
+      </div>
+      </section>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="../lib/jquery.min.js"></script>
+    <script src="../lib/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>

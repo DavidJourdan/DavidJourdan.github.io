@@ -1,172 +1,103 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset=utf-8>
-		<title>My first three.js app</title>
-		<style>
-			body { 
-				margin: 0px;
-				background-color: #000000;
-				overflow: hidden; 
-			}
-			canvas { width: 100%; height: 100% }
+<html lang="en">
 
-			#info {
-				position: absolute;
-				padding: 10px;
-				width: 100%;
-				text-align: center;
-				color: #fff;
-			}
+  <head>
 
-			a { color: mediumaquamarine; }
-		</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-	</head>
-	<body>
-		<div id="info">
-			Welcome to my GitHub page ! <br />
-			There will be more to come soon :) <br />
-			Built using <a href="http://threejs.org"> three.js </a> 
-		</div>
+    <title>David Jourdan</title>
 
-		<script src="lib/three.js"></script>
-		<script src="lib/Detector.js"></script>
-		<script src="lib/OrbitControls.js"></script>
-		<script src="lib/stats.min.js"></script>
-		<script src='lib/dat.gui.min.js'></script>
-		<script src='js/MarchingCubes.js'></script>
-		<script id='vertexShader' type='x-shader/x-vertex'>
-			varying vec3 n;
-			varying vec3 p;
-			void main(void) {
-				n = normal;
-				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-				p = worldPosition.xyz;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );	
-			}
-		</script>
-		<script id='toonFragmentShader' type='x-shader/x-fragment'>
-			#define INV_PI 0.31830988618379067153776752674503
+    <!-- Bootstrap core CSS -->
+    <link href="/lib/bootstrap.min.css" rel="stylesheet">
 
-			varying vec3 n; // fragment-wise normal
-			varying vec3 p; // fragment-wise position
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">
 
-			uniform vec3 color;
-			uniform vec3 lightPos;
-			uniform vec3 cameraPos;
+    <link href="css/main.css" rel="stylesheet">
 
-			const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
-			const vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+    <script src="lib/three.js" charset="utf-8"></script>
+    <script src="lib/Detector.js" charset="utf-8"></script>
+    <script src="js/MarchingCubes.js" charset="utf-8"></script>
+  </head>
 
-			void main (void) {
-				gl_FragColor = vec4(color, 1.0);
+  <body id="page-top">
 
-				vec3 l = normalize (lightPos - p);
-				vec3 v = normalize (cameraPos - p);
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+        <a class="navbar-brand" href="index.html">
+          <span class="d-none d-lg-block">
+            <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="resources/Photo.JPG" alt="">
+          </span>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" id="active" href="index.html">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/projects">Projects</a>
+            </li>
+            <ul class="list-inline list-social-icons mb-0">
+              <li class="list-inline-item">
+                <a href="https://github.com/DavidJourdan">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-2x"></i>
+                    <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+              <li class="list-inline-item">
+                <a href="https://www.linkedin.com/in/david-jourdan-telecom/">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-2x"></i>
+                    <i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+              <li class="list-inline-item">
+                <a href="resources/cv.pdf">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-2x"></i>
+                    <i class="fas fa-address-book fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </ul>
+        </div>
+      </nav>
 
-				if(dot(n, l) > 0.0) gl_FragColor = vec4(0.5*color, 1.0);
-				else if(dot(n, -v) > 0.99) gl_FragColor = white;
-			}
-		</script>
+    <div class="container-fluid p-0">
 
-		<script>
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+      <section class="resume-section p-3 p-lg-5 d-flex d-column">
+        <div class="my-auto">
+          <h1 class="mb-0">David
+            <span class="text-primary">Jourdan</span>
+          </h1>
+          <div class="subheading mb-5">Intern at INRIA Sophia-Antipolis · GRAPHDECO Team ·
+            <a href="">david.jourdan@inria.fr</a>
+          </div>
+          <p>I am a computer graphics student looking for a position as a PhD student. I am currently doing a research internship at INRIA Sophia-Antipolis in the GraphDeco team where I am working on simulation and inverse problems related to the design and fabrication of tensile surfaces in architecture.</p>
 
-			var camera, scene, cube, renderer;
-			var geometry, parameters, wireframe;
-			var phongMaterial, wireMaterial, toonMaterial, toonShader;
+          <p> I am interested in architectural geometry, discrete differential geometry, surface modeling, simulation and many other topics in computer graphics.</p>
 
-			init();
-			render();
+          <p> You can download my resume <a href="resources/cv.pdf">here</a> and see some projects I did in my final semester <a href="projects.html">here</a>. </p>
+          <div id="clebsch" class="mb-5"></div>
+        </div>
+      </section>
 
-			function init() {
-				scene = new THREE.Scene();	
+    </div>
 
-				renderer = new THREE.WebGLRenderer({ antialias: true });
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
+    <script src="/js/ClebschSurface.js" charset="utf-8"></script>
 
-				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-				camera.position.z = 5;
+    <!-- Bootstrap core JavaScript -->
+    <script src="/lib/jquery.min.js"></script>
+    <script src="/lib/bootstrap.bundle.min.js"></script>
 
-				controls = new THREE.OrbitControls( camera, renderer.domElement );
+  </body>
 
-				var gui = new dat.GUI();
-				parameters = {
-						rotation: false,
-						shader: "Phong"
-				};
-				gui.add(parameters, 'rotation').name("Rotation");
-				gui.add(parameters, 'shader', ['Phong', 'Wireframe', 'Toon', 'Custom']).name("Shader").onFinishChange(function() {
-					scene.remove(cube);
-					switch(parameters.shader) {
-						case 'Phong':
-							material = phongMaterial;
-							break;
-						case 'Wireframe':
-							material = wireMaterial;
-							break;
-						case 'Toon':
-							material = toonMaterial;
-							break;
-						case 'Custom':
-							material = toonShader;
-							break;
-					}
-					cube = new THREE.Mesh( geometry, material );
-					scene.add(cube);
-				});
-
-				var uniforms = { color: { value: new THREE.Color( 0x0077ff ) },
-								 lightPos: { value: new THREE.Vector3(10, 10, 10) }, 
-								 cameraPos: { value: new THREE.Vector3(0, 0, 5) } };
-
-				var vertexShader = document.getElementById('vertexShader').textContent;
-				var fragmentShader = document.getElementById('toonFragmentShader').textContent;
-				
-				// geometry = new THREE.SphereBufferGeometry(1, 16, 16);
-				geometry = marchingCubes(100, -2, 2, 0.01, function(x, y, z){
-					return x*x*x + y*y*y + z*z*z + 1 - Math.pow(x + y + z + 1, 3);
-				});
-				phongMaterial = new THREE.MeshStandardMaterial( { color: 0x0077ff, specular: 0x111111, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
-				wireMaterial = new THREE.MeshBasicMaterial( { color: 0x0077ff, wireframe: true } );
-				toonShader = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms } );
-				toonMaterial = new THREE.MeshToonMaterial( { color: 0x0077ff, shading: THREE.SmoothShading, side: THREE.DoubleSide } );
-
-				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
-				var ambientLight = new THREE.AmbientLight( 0x555555 );
-				cube = new THREE.Mesh( geometry, phongMaterial );
-
-				scene.add( cube );
-				scene.add(camera);
-				scene.add(light);
-				scene.add(ambientLight);
-
-				window.addEventListener( 'resize', onWindowResize, false );
-
-			}
-
-
-			function render() {
-				controls.update();
-
-				requestAnimationFrame( render );
-				if(parameters.rotation){
-					cube.rotation.x += 0.01;
-					cube.rotation.y += 0.01;
-				}
-				renderer.render( scene, camera );
-			}
-
-			function onWindowResize() {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
-
-		</script>
-
-	</body>
 </html>
